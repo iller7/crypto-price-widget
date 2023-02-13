@@ -5,20 +5,21 @@
 const remote = require("electron").remote;
 //user settings
 const settings = require("electron-settings");
+const sumInvested = 14987.06;
 
 //default coins
 if (settings.has("user.coins")) {
   //do nothing because coins already set
 } else {
   settings.set("user", {
-    coins: ["BTC", "ETH", "LTC"],
+    coins: ["BTC", "ETH"],
   });
 }
 //default base currency
 if (settings.has("user.currency")) {
   //do nothing because currency already set
 } else {
-  settings.set("user.currency", "USD");
+  settings.set("user.currency", "GBP");
 }
 
 /* Base Currency */
@@ -153,7 +154,6 @@ function initData() {
       errorDiv.className = "error";
       errorDiv.innerHTML =
         '<h2>Uh-oh! Looks like you&#39;re offline.</h2>\
-                            <img src="images/offline_doge.jpg" />\
                             <h4>Reconnect, then reload the app.</h4>\
                             <button type="button" class="refresh" onClick="location.reload(false);" >Reload</button>';
       document.getElementById("main").appendChild(errorDiv);
@@ -204,6 +204,9 @@ function updateData() {
           }
           if (coinRate.includes("HKD")) {
             coinRate = coinRate.replace("HKD", "HK$");
+          }
+          if (coinRate.includes("GBP")) {
+            coinRate = coinRate.replace("GBP", "£");
           }
           if (coinRate.includes("MXN")) {
             coinRate = coinRate.replace("MXN", "$");
@@ -292,20 +295,33 @@ function updateData() {
           let portfolioTotalValue = document.querySelector(
             "#portfolio-total-value .value"
           );
+          let portfolioTotalValue2 = document.querySelector(
+            "#portfolio-total-value2 .value"
+          );
+          let portfolioIncrease = document.querySelector(
+            "#portfolio-total-value2 .increase"
+          );
 
           // total value for each coin
           if (coinRate.includes("Ƀ")) {
             //because BTC has 8 decimal places
             quantityValue.innerHTML = quantityTotal.toFixed(8);
             portfolioTotalValue.innerHTML = portfolioSum.toFixed(8);
+            portfolioTotalValue2.innerHTML = portfolioSum.toFixed(8);
+            portfolioIncrease.innerHTML = "(" + (100 * (portfolioSum - sumInvested) / sumInvested).toFixed(2) + "%)";
           } else if (quantityValue != null) {
             //standard currency format
-            quantityValue.innerHTML = quantityTotal
-              .toFixed(2)
-              .replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
-            portfolioTotalValue.innerHTML = portfolioSum
-              .toFixed(2)
-              .replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+            quantityValue.innerHTML = quantityTotal.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+            portfolioTotalValue.innerHTML = "£" + portfolioSum.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+            portfolioTotalValue2.innerHTML = "£" + portfolioSum.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+            portfolioIncrease.innerHTML = "(" + (100 * (portfolioSum - sumInvested) / sumInvested).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,") + "%)";
+          }
+          if (portfolioSum - sumInvested > 0) {
+            portfolioIncrease.classList.add("positive")
+            portfolioIncrease.classList.remove("negative")
+          } else {
+            portfolioIncrease.classList.remove("positive");
+            portfolioIncrease.classList.add("negative")
           }
         } //for
       }); //response.json().then
